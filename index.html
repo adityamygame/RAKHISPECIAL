@@ -1,511 +1,1094 @@
-<style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-        overflow: hidden;
-        background-color: #000;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        color: #fff;
-        transition: background 1.5s ease;
-    }
-    #container {
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden;
-    }
-    body.theme-molten {
-        background: linear-gradient(180deg, #000000 0%, #100500 50%, #1f0a00 100%);
-    }
-    body.theme-molten .glow {
-        background: radial-gradient(circle at 50% 50%, rgba(255, 100, 0, 0.05) 0%, rgba(200, 50, 0, 0.05) 50%, transparent 65%);
-    }
-    body.theme-molten .ui-panel { background: rgba(50, 20, 10, 0.3); border-color: rgba(255, 120, 50, 0.4); }
-    body.theme-molten .theme-btn.active { background: rgba(255, 100, 0, 0.5); border-color: rgba(255, 100, 0, 0.7); }
-    body.theme-molten .toggle-slider { background: rgba(180, 80, 40, 0.4); }
-    body.theme-molten input:checked + .toggle-slider { background-color: rgba(255, 100, 0, 0.6); }
-    body.theme-molten .toggle-slider:before { box-shadow: 0 0 8px rgba(255, 150, 50, 0.8); }
-    body.theme-cosmic {
-        background: linear-gradient(180deg, #000000 0%, #050010 50%, #0a001f 100%);
-    }
-    body.theme-cosmic .glow {
-        background: radial-gradient(circle at 50% 50%, rgba(147, 112, 219, 0.05) 0%, rgba(75, 0, 130, 0.05) 50%, transparent 65%);
-    }
-    body.theme-cosmic .ui-panel { background: rgba(40, 20, 60, 0.3); border-color: rgba(147, 112, 219, 0.4); }
-    body.theme-cosmic .theme-btn.active { background: rgba(147, 112, 219, 0.5); border-color: rgba(147, 112, 219, 0.7); }
-    body.theme-cosmic .toggle-slider { background: rgba(147, 112, 219, 0.4); }
-    body.theme-cosmic input:checked + .toggle-slider { background-color: rgba(147, 112, 219, 0.6); }
-    body.theme-cosmic .toggle-slider:before { box-shadow: 0 0 8px rgba(170, 130, 230, 0.8); }
-    body.theme-emerald {
-        background: linear-gradient(180deg, #000000 0%, #001005 50%, #001f0a 100%);
-    }
-    body.theme-emerald .glow {
-        background: radial-gradient(circle at 50% 50%, rgba(0, 255, 127, 0.05) 0%, rgba(46, 139, 87, 0.05) 50%, transparent 65%);
-    }
-    body.theme-emerald .ui-panel { background: rgba(20, 60, 40, 0.3); border-color: rgba(60, 179, 113, 0.4); }
-    body.theme-emerald .theme-btn.active { background: rgba(60, 179, 113, 0.5); border-color: rgba(60, 179, 113, 0.7); }
-    body.theme-emerald .toggle-slider { background: rgba(60, 179, 113, 0.4); }
-    body.theme-emerald input:checked + .toggle-slider { background-color: rgba(60, 179, 113, 0.6); }
-    body.theme-emerald .toggle-slider:before { box-shadow: 0 0 8px rgba(100, 200, 150, 0.8); }
-    .glow {
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        pointer-events: none; mix-blend-mode: screen; opacity: 0.75; transition: background 1.5s ease;
-    }
-    .ui-panel {
-        position: fixed;
-        z-index: 100;
-        padding: 12px;
-        border: 1px solid;
-        border-radius: 16px;
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
-        transition: background 1.5s ease, border-color 1.5s ease;
-        display: flex;
-        gap: 10px;
-        align-items: center;
-    }
-    #ui-top-left {
-        overflow: hidden;
-        top: 20px;
-        left: 20px;
-        flex-wrap: wrap;
-        resize: both;
-    }
-    #ui-bottom-right {
-        bottom: 20px;
-        right: 20px;
-        flex-direction: column;
-        align-items: flex-end;
-        gap: 15px;
-    }
-    .theme-btn {
-        padding: 8px 16px;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        background: rgba(255, 255, 255, 0.1);
-        color: rgba(255, 255, 255, 0.85);
-        border-radius: 12px;
-        cursor: pointer;
-        transition: background 0.3s, border-color 0.3s, color 0.3s, transform 0.08s ease;
-        font-size: 14px;
-        font-weight: 300;
-    }
-    .theme-btn:hover { background: rgba(255, 255, 255, 0.2); border-color: rgba(255, 255, 255, 0.4); }
-    .theme-btn:active { transform: scale(0.98); }
-    .theme-btn.active { color: #fff; font-weight: 500; }
-    .toggle-option { display: flex; align-items: center; gap: 10px; }
-    .toggle-option label[for="animateToggle"] { cursor: pointer; font-size: 14px; font-weight: 300; color: rgba(255,255,255,0.9); }
-    .toggle-switch { position: relative; display: inline-block; width: 46px; height: 24px; }
-    .toggle-switch input { opacity: 0; width: 0; height: 0; }
-    .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; transition: .3s; border-radius: 24px; }
-    .toggle-slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%;}
-    input:checked + .toggle-slider:before { transform: translateX(22px); }
-    @media (max-width: 768px) {
-        .ui-panel { padding: 10px; border-radius: 12px; }
-        #ui-top-left { top: 15px; left: 15px; }
-        #ui-bottom-right { bottom: 15px; right: 15px; }
-    }
-    @media (max-width: 480px) {
-        #ui-top-left { top: 10px; left: 10px; }
-        #ui-bottom-right { bottom: 10px; right: 10px; }
-        .theme-btn { padding: 6px 12px; font-size: 12px; }
-        .toggle-option label[for="animateToggle"] { font-size: 12px; }
-    }
-</style>
-<script type="importmap">
-    {
-        "imports": {
-            "three": "https://cdn.jsdelivr.net/npm/three@0.162.0/build/three.module.js",
-            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.162.0/examples/jsm/"
-        }
-    }
-</script>
-<div id="container"></div>
-<div class="glow"></div>
-<div id="ui-top-left" class="ui-panel">
-</div>
-<div id="ui-bottom-right" class="ui-panel">
-    <div id="action-buttons">
-        <button id="pulseBtn" class="theme-btn" type="button" title="Click for pulse. Hold to charge.">Pulse</button>
-    </div>
-    <div class="toggle-option">
-        <label for="animateToggle">Animate</label>
-        <label class="toggle-switch">
-            <input type="checkbox" id="animateToggle" checked />
-            <span class="toggle-slider"></span>
-        </label>
-    </div>
-</div>
-<script type="module">
-    import * as THREE from 'three';
-    import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
-    import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-    import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
-    import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
-    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
 
-    let scene, camera, renderer, particles, composer, controls;
-    let time = 0;
-    let isAnimationEnabled = true;
-    let currentTheme = 'molten';
-    const particleCount = 10000;
-    let shockwaves = []; 
-    const MAX_HOME_RADIUS = 45; 
-    let chargeStart = null; 
-    const themes = {
-        molten: {
-            name: 'Molten',
-            colors: [ new THREE.Color(0xff4800), new THREE.Color(0xff8c00), new THREE.Color(0xd73a00), new THREE.Color(0x3d1005), new THREE.Color(0xffc600) ],
-            bloom: { strength: 0.35, radius: 0.45, threshold: 0.7 }
-        },
-        cosmic: {
-            name: 'Cosmic',
-            colors: [ new THREE.Color(0x6a0dad), new THREE.Color(0x9370db), new THREE.Color(0x4b0082), new THREE.Color(0x8a2be2), new THREE.Color(0xdda0dd) ],
-            bloom: { strength: 0.4, radius: 0.5, threshold: 0.65 }
-        },
-        emerald: {
-            name: 'Emerald',
-            colors: [ new THREE.Color(0x00ff7f), new THREE.Color(0x3cb371), new THREE.Color(0x2e8b57), new THREE.Color(0x00fa9a), new THREE.Color(0x98fb98) ],
-            bloom: { strength: 0.3, radius: 0.6, threshold: 0.75 }
+      html,
+      body {
+        background-color: #000;
+        height: 100%;
+      }
+
+      body {
+        background: #222;
+        background: radial-gradient(#333, #111);
+        background-position: center center;
+        background-repeat: no-repeat;
+        background-size: cover;
+        color: #fff;
+        font: 100%/1.5 sans-serif;
+        overflow: hidden;
+      }
+
+      .score {
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 40px;
+        font-weight: bold;
+        padding-top: 5px;
+        text-align: center;
+      }
+
+      .stage {
+        bottom: 0;
+        left: 0;
+        margin: auto;
+        position: absolute;
+        right: 0;
+        top: 0;
+        z-index: 2;
+      }
+
+      .tile {
+        background: rgba(0, 0, 0, 0.15);
+        position: absolute;
+        transition-property:
+          background,
+          box-shadow,
+          opacity,
+          transform
+        ;
+        transform: translateZ(0);
+        transition-duration: 3000ms;
+      }
+
+      .tile:before {
+        bottom: 0;
+        content: '';
+        height: 0;
+        left: 0;
+        margin: auto;
+        opacity: 0;
+        position: absolute;
+        right: 0;
+        top: 0;
+        width: 0;
+        transition: opacity 300ms;
+      }
+
+      .tile.path:before {
+        opacity: 1;
+      }
+
+      .tile.up:before {
+        border-bottom: 4px inset rgba(255, 255, 255, 0.15);
+        border-left: 4px solid transparent;
+        border-right: 4px solid transparent;
+      }
+
+      .tile.down:before {
+        border-top: 4px inset rgba(255, 255, 255, 0.15);
+        border-left: 4px solid transparent;
+        border-right: 4px solid transparent;
+      }
+
+      .tile.left:before { 
+        border-right: 4px inset rgba(255, 255, 255, 0.15);
+        border-top: 4px solid transparent;
+        border-bottom: 4px solid transparent;
+      }
+
+      .tile.right:before { 
+        border-left: 4px inset rgba(255, 255, 255, 0.15);
+        border-top: 4px solid transparent;
+        border-bottom: 4px solid transparent;
+      }
+
+      @media (max-width: 900px), (max-height: 900px) {
+        .tile.up:before,
+        .tile.down:before,
+        .tile.left:before,
+        .tile.right:before {
+          border-width: 3px;
         }
-    };
-    document.addEventListener('DOMContentLoaded', init);
-    function createStarPath(particleIndex, totalParticles) {
-        const numStarPoints = 5;
-        const outerRadius = 35;
-        const innerRadius = 15;
-        const scale = 1.0;
-        const zDepth = 4;
-        const starVertices = [];
-        for (let i = 0; i < numStarPoints; i++) {
-            let angle = (i / numStarPoints) * Math.PI * 2 - Math.PI / 2;
-            starVertices.push(new THREE.Vector2(outerRadius * Math.cos(angle), outerRadius * Math.sin(angle)));
-            angle += Math.PI / numStarPoints;
-            starVertices.push(new THREE.Vector2(innerRadius * Math.cos(angle), innerRadius * Math.sin(angle)));
+      }
+
+      @media (max-width: 500px), (max-height: 500px) {
+        .tile.up:before,
+        .tile.down:before,
+        .tile.left:before,
+        .tile.right:before {
+          border-width: 2px;
         }
-        const numSegments = starVertices.length;
-        const t_path = (particleIndex / totalParticles) * numSegments;
-        const segmentIndex = Math.floor(t_path) % numSegments;
-        const segmentProgress = t_path - Math.floor(t_path);
-        const startVertex = starVertices[segmentIndex];
-        const endVertex = starVertices[(segmentIndex + 1) % numSegments];
-        const x = THREE.MathUtils.lerp(startVertex.x, endVertex.x, segmentProgress);
-        const y = THREE.MathUtils.lerp(startVertex.y, endVertex.y, segmentProgress);
-        const z = Math.sin((particleIndex / totalParticles) * Math.PI * 4) * (zDepth / 2);
-        const jitterStrength = 0.2;
-        return new THREE.Vector3(
-            x * scale + (Math.random() - 0.5) * jitterStrength,
-            y * scale + (Math.random() - 0.5) * jitterStrength,
-            z + (Math.random() - 0.5) * jitterStrength * 0.5
-        );
-    }
-    function init() {
-        scene = new THREE.Scene();
-        camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1500);
-        camera.position.z = 90;
-        renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        document.getElementById('container').appendChild(renderer.domElement);
-        createThemeButtons();
-        controls = new OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
-        controls.dampingFactor = 0.04;
-        controls.rotateSpeed = 0.3;
-        controls.minDistance = 30;
-        controls.maxDistance = 300;
-        controls.enablePan = false;
-        controls.autoRotate = true;
-        controls.autoRotateSpeed = 0.15;
-        composer = new EffectComposer(renderer);
-        composer.addPass(new RenderPass(scene, camera));
-        const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
-        composer.addPass(bloomPass);
-        composer.addPass(new OutputPass());
-        scene.userData.bloomPass = bloomPass;
-        createParticleSystem();
-        window.addEventListener('resize', onWindowResize);
-        document.getElementById('animateToggle').addEventListener('change', (e) => { isAnimationEnabled = e.target.checked; });
-        const pulseBtn = document.getElementById('pulseBtn');
-        pulseBtn.addEventListener('click', () => {
-            if (chargeStart !== null) return;
-            triggerShockwave({ amplitude: 12, speed: 28, width: 6, decay: 1.25 });
-        });
-        const startCharge = () => { chargeStart = performance.now(); };
-        const endCharge = () => {
-            if (chargeStart === null) return;
-            const heldMs = performance.now() - chargeStart;
-            chargeStart = null;
-            const heldSec = Math.min(heldMs / 1000, 2.0); 
-            const amplitude = 10 + heldSec * 15;         
-            const width = 5 + heldSec * 4;               
-            const speed = 28 + heldSec * 6;              
-            triggerShockwave({ amplitude, speed, width, decay: 1.35 });
-            pulseBtn.blur(); 
+      }
+
+      .tile.pressed {
+        background: rgba(0, 0, 0, 0.3);
+        box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.6);
+        transition-duration: 0ms;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="score">0</div>
+    <div class="stage"></div>
+
+    <script>
+      /*================================================
+
+      Polyfill
+
+      ================================================*/
+
+      (function(){ 'use strict';
+
+        /*================================================
+
+        Request Animation Frame
+
+        ================================================*/
+        
+        var lastTime = 0;
+        var vendors = [ 'webkit', 'moz' ];
+        for( var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x ) {
+          window.requestAnimationFrame = window[ vendors[ x ] + 'RequestAnimationFrame' ];
+          window.cancelAnimationFrame = window[ vendors[ x ] + 'CancelAnimationFrame' ] || window[ vendors[ x ] + 'CancelRequestAnimationFrame' ];
+        }
+
+        if( !window.requestAnimationFrame ) {
+          window.requestAnimationFrame = function( callback, element ) {
+            var currTime = new Date().getTime();
+            var timeToCall = Math.max( 0, 16 - ( currTime - lastTime ) );
+            var id = window.setTimeout(
+              function() { 
+                callback( currTime + timeToCall ); 
+              }, timeToCall );
+            lastTime = currTime + timeToCall;
+            return id;
+          }
+        }
+
+        if( !window.cancelAnimationFrame ) {
+          window.cancelAnimationFrame = function( id ) {
+            clearTimeout( id );
+          }
+        }
+
+      })();
+
+      /*================================================
+
+      DOM Manipulation
+
+      ================================================*/
+
+      (function(){ 'use strict';
+
+        function hasClass( elem, className ) {
+          return new RegExp( ' ' + className + ' ' ).test( ' ' + elem.className + ' ' );
         };
-        pulseBtn.addEventListener('mousedown', startCharge);
-        pulseBtn.addEventListener('touchstart', (e) => { e.preventDefault(); startCharge(); }, { passive: false });
-        pulseBtn.addEventListener('mouseup', endCharge);
-        pulseBtn.addEventListener('mouseleave', endCharge);
-        pulseBtn.addEventListener('touchend', (e) => { e.preventDefault(); endCharge(); });
-        setTheme(currentTheme);
-        animate();
-    }
-    function triggerShockwave({ amplitude = 12, speed = 28, width = 6, decay = 1.25 } = {}) {
-        shockwaves.push({ t0: time, amplitude, speed, width, decay });
-        if (shockwaves.length > 6) shockwaves.shift();
-    }
-    function createThemeButtons() {
-        const themeSelector = document.createElement('div');
-        themeSelector.id = 'theme-selector';
-        themeSelector.style.display = 'flex';
-        themeSelector.style.gap = '10px';
-        themeSelector.style.flexWrap = 'wrap';
-        Object.keys(themes).forEach(themeKey => {
-            const button = document.createElement('button');
-            button.className = 'theme-btn';
-            button.dataset.theme = themeKey;
-            button.textContent = themes[themeKey].name;
-            button.addEventListener('click', () => setTheme(themeKey));
-            themeSelector.appendChild(button);
-        });
-        const controlsDiv = document.getElementById('ui-top-left');
-        controlsDiv.prepend(themeSelector);
-    }
-    function createParticleSystem() {
-        const geometry = new THREE.BufferGeometry();
-        const positions = new Float32Array(particleCount * 3);
-        const colors = new Float32Array(particleCount * 3);
-        const sizes = new Float32Array(particleCount);
-        const targetPositions = new Float32Array(particleCount * 3);
-        const disintegrationOffsets = new Float32Array(particleCount * 3);
-        for (let i = 0; i < particleCount; i++) {
-            const i3 = i * 3;
-            const pos = createStarPath(i, particleCount);
-            positions[i3] = pos.x;
-            positions[i3 + 1] = pos.y;
-            positions[i3 + 2] = pos.z;
-            targetPositions[i3]     = pos.x;
-            targetPositions[i3 + 1] = pos.y;
-            targetPositions[i3 + 2] = pos.z;
-            const { color, size } = getAttributesForParticle(i);
-            colors[i3]     = color.r;
-            colors[i3 + 1] = color.g;
-            colors[i3 + 2] = color.b;
-            sizes[i]       = size;
-            const offsetStrength = 30 + Math.random() * 40;
-            const phi = Math.random() * Math.PI * 2;
-            const theta = Math.acos(2 * Math.random() - 1);
-            disintegrationOffsets[i3]     = Math.sin(theta) * Math.cos(phi) * offsetStrength;
-            disintegrationOffsets[i3 + 1] = Math.sin(theta) * Math.sin(phi) * offsetStrength;
-            disintegrationOffsets[i3 + 2] = Math.cos(theta) * offsetStrength * 0.5;
+
+        function addClass( elem, className ) {
+          if( !hasClass(elem, className ) ) {
+            elem.className += ' ' + className;
+          }
+        };
+
+        function removeClass( elem, className ) {
+          var newClass = ' ' + elem.className.replace( /[\t\r\n]/g, ' ' ) + ' ';
+          if( hasClass( elem, className ) ) {
+            while( newClass.indexOf(' ' + className + ' ' ) >= 0 ) {
+              newClass = newClass.replace( ' ' + className + ' ', ' ' );
+            }
+            elem.className = newClass.replace( /^\s+|\s+$/g, '' );
+          }
+        };
+
+        function toggleClass( elem, className ) {
+          var newClass = ' ' + elem.className.replace( /[\t\r\n]/g, ' ' ) + ' ';
+          if( hasClass(elem, className ) ) {
+            while( newClass.indexOf( ' ' + className + ' ' ) >= 0 ) {
+              newClass = newClass.replace( ' ' + className + ' ' , ' ' );
+            }
+            elem.className = newClass.replace( /^\s+|\s+$/g, '' );
+          } else {
+            elem.className += ' ' + className;
+          }
+        };
+
+      })();
+
+      /*================================================
+
+      Core
+
+      ================================================*/
+
+      g = {};
+
+      (function(){ 'use strict';
+
+        /*================================================
+
+        Math
+
+        ================================================*/
+
+        g.m = Math;
+        g.mathProps = 'E LN10 LN2 LOG2E LOG10E PI SQRT1_2 SQRT2 abs acos asin atan ceil cos exp floor log round sin sqrt tan atan2 pow max min'.split( ' ' );
+        for ( var i = 0; i < g.mathProps.length; i++ ) {
+          g[ g.mathProps[ i ] ] = g.m[ g.mathProps[ i ] ];
         }
-        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-        geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
-        geometry.setAttribute('targetPosition', new THREE.BufferAttribute(targetPositions, 3));
-        geometry.setAttribute('disintegrationOffset', new THREE.BufferAttribute(disintegrationOffsets, 3));
-        const texture = createParticleTexture();
-        const material = new THREE.PointsMaterial({
-            size: 2.8,
-            map: texture,
-            vertexColors: true,
-            transparent: true,
-            blending: THREE.AdditiveBlending,
-            depthWrite: false,
-            sizeAttenuation: true,
-            alphaTest: 0.01
-        });
-        particles = new THREE.Points(geometry, material);
-        scene.add(particles);
-    }
-    function getAttributesForParticle(i) {
-        const t = i / particleCount;
-        const colorPalette = themes[currentTheme].colors;
-        const colorProgress = (t * colorPalette.length * 1.5 + time * 0.05)
-         % colorPalette.length;
-        const colorIndex1 = Math.floor(colorProgress);
-        const colorIndex2 = (colorIndex1 + 1) % colorPalette.length;
-        const blendFactor = colorProgress - colorIndex1;
-        const color1 = colorPalette[colorIndex1];
-        const color2 = colorPalette[colorIndex2];
-        const baseColor = new THREE.Color().
-        lerpColors(color1, color2, blendFactor);
-        const color = baseColor.clone().multiplyScalar
-        (0.65 + Math.random() * 0.55);
-        const size = 0.65 + Math.random() * 0.6;
-        return { color, size };
-    }
-    function createParticleTexture() {
-        const canvas = document.createElement('canvas');
-        const size = 64;
-        canvas.width = size; canvas.height = size;
-        const context = canvas.getContext('2d');
-        const centerX = size / 2, centerY = size / 2;
-        const outerRadius = size * 0.45;
-        const innerRadius = size * 0.20;
-        const numPoints = 5;
-        context.beginPath();
-        context.moveTo(centerX, centerY - outerRadius);
-        for (let i = 0; i < numPoints; i++) {
-            const outerAngle = (i / numPoints) * Math.PI * 2 - Math.PI / 2;
-            context.lineTo(centerX + outerRadius * Math.cos(outerAngle), centerY + outerRadius * Math.sin(outerAngle));
-            const innerAngle = outerAngle + (Math.PI / numPoints);
-            context.lineTo(centerX + innerRadius * Math.cos(innerAngle), centerY + innerRadius * Math.sin(innerAngle));
+        g.m.TWO_PI = g.m.PI * 2;
+
+        /*================================================
+
+        Miscellaneous
+
+        ================================================*/
+
+        g.isset = function( prop ) {
+          return typeof prop != 'undefined';
+        };
+
+        g.log = function() {
+          if( g.isset( g.config ) && g.config.debug && window.console ){
+            console.log( Array.prototype.slice.call( arguments ) );
+          }
+        };
+
+      })();
+
+      /*================================================
+
+      Group
+
+      ================================================*/
+
+      (function(){ 'use strict';
+
+        g.Group = function() {
+          this.collection = [];
+          this.length = 0;
+        };
+
+        g.Group.prototype.add = function( item ) {
+          this.collection.push( item );
+          this.length++;
+        };
+
+        g.Group.prototype.remove = function( index ) {
+          if( index < this.length ) {
+            this.collection.splice( index, 1 );
+            this.length--;
+          }
+        };
+
+        g.Group.prototype.empty = function() {
+          this.collection.length = 0;
+          this.length = 0;
+        };
+
+        g.Group.prototype.each = function( action, asc ) {
+          var asc = asc || 0,
+            i;
+          if( asc ) {
+            for( i = 0; i < this.length; i++ ) {
+              this.collection[ i ][ action ]( i );
+            }
+          } else {
+            i = this.length;
+            while( i-- ) {
+              this.collection[ i ][ action ]( i );
+            }
+          }
+        };
+
+      })();
+
+      /*================================================
+
+      Utilities
+
+      ================================================*/
+
+      (function(){ 'use strict';
+
+        g.util = {};
+
+        /*================================================
+
+        Random
+
+        ================================================*/
+        
+        g.util.rand = function( min, max ) {
+          return g.m.random() * ( max - min ) + min;
+        };
+
+        g.util.randInt = function( min, max ) {
+          return g.m.floor( g.m.random() * ( max - min + 1) ) + min;
+        };
+
+      }());
+
+      /*================================================
+
+      State
+
+      ================================================*/
+
+      (function(){ 'use strict';
+
+        g.states = {};
+
+        g.addState = function( state ) {
+          g.states[ state.name ] = state;
+        };
+
+        g.setState = function( name ) {
+          if( g.state ) {
+            g.states[ g.state ].exit();
+          }
+          g.state = name;
+          g.states[ g.state ].init();
+        };
+
+        g.currentState = function() {
+          return g.states[ g.state ];
+        };
+
+      }());
+
+      /*================================================
+
+      Time
+
+      ================================================*/
+
+      (function(){ 'use strict';
+
+        g.Time = function() {
+          this.reset();
         }
-        context.closePath();
-        const gradient = context.createRadialGradient(centerX, centerY, 0, centerX, centerY, outerRadius);
-        gradient.addColorStop(0,   'rgba(255,255,255,1)');
-        gradient.addColorStop(0.3, 'rgba(255,255,220,0.9)');
-        gradient.addColorStop(0.6, 'rgba(255,200,150,0.6)');
-        gradient.addColorStop(1,   'rgba(255,150,0,0)');
-        context.fillStyle = gradient;
-        context.fill();
-        const texture = new THREE.CanvasTexture(canvas);
-        texture.needsUpdate = true;
-        return texture;
-    }
-    function animateParticles() {
-        if (!particles || !isAnimationEnabled) return;
-        const positions = particles.geometry.attributes.position.array;
-        const targetPositions = particles.geometry.attributes.targetPosition.array;
-        const particleColors = particles.geometry.attributes.color.array;
-        const particleSizes = particles.geometry.attributes.size.array;
-        const disintegrationOffsets = particles.geometry.attributes.disintegrationOffset.array;
-        const rotationSpeed = 0.0008;
-        const cosRot = Math.cos(rotationSpeed);
-        const sinRot = Math.sin(rotationSpeed);
-        for (let i = 0; i < particleCount; i++) {
-            const i3 = i * 3;
-            let tx = targetPositions[i3];
-            let ty = targetPositions[i3 + 1];
-            targetPositions[i3]     = tx * cosRot - ty * sinRot;
-            targetPositions[i3 + 1] = tx * sinRot + ty * cosRot;
-        }
-        const tempRotatedTargets = new Float32Array(targetPositions);
-        for (let i = 0; i < particleCount; i++) {
-            const i3 = i * 3;
-            const nextI = ((i + 1) % particleCount) * 3;
-            const flowFactor = Math.sin(time * 0.4 + (i / particleCount) * Math.PI * 10) * 0.005;
-            targetPositions[i3]     += (tempRotatedTargets[nextI]     - tempRotatedTargets[i3])     * flowFactor;
-            targetPositions[i3 + 1] += (tempRotatedTargets[nextI + 1] - tempRotatedTargets[i3 + 1]) * flowFactor;
-            targetPositions[i3 + 2] += (tempRotatedTargets[nextI + 2] - tempRotatedTargets[i3 + 2]) * flowFactor;
-        }
-        for (let i = 0; i < particleCount; i++) {
-            const i3 = i * 3;
-            const iSize = i;
-            const homeX = targetPositions[i3];
-            const homeY = targetPositions[i3 + 1];
-            const homeZ = targetPositions[i3 + 2];
-            const disintegrationCycleTime = 10.0;
-            const particleCycleOffset = (i / particleCount) * disintegrationCycleTime * 0.5;
-            const cycleProgress = ((time * 0.6 + particleCycleOffset) % disintegrationCycleTime) / disintegrationCycleTime;
-            let disintegrationAmount = 0;
-            const stablePhaseEnd = 0.5;
-            const disintegrateStartPhase = stablePhaseEnd;
-            const disintegrateFullPhase = stablePhaseEnd + 0.15;
-            const holdPhaseEnd = disintegrateFullPhase + 0.1;
-            if (cycleProgress < stablePhaseEnd) {
-                disintegrationAmount = 0;
-            } else if (cycleProgress < disintegrateFullPhase) {
-                disintegrationAmount = (cycleProgress - disintegrateStartPhase) / (disintegrateFullPhase - disintegrateStartPhase);
-            } else if (cycleProgress < holdPhaseEnd) {
-                disintegrationAmount = 1.0;
+
+        g.Time.prototype.reset = function() {
+          this.now = Date.now();
+          this.last = Date.now();
+          this.delta = 60;
+          this.ndelta = 1;
+          this.elapsed = 0;
+          this.nelapsed = 0;
+          this.tick = 0;
+        };
+
+        g.Time.prototype.update = function() {
+          this.now = Date.now();
+          this.delta = this.now - this.last;
+          this.ndelta = Math.min( Math.max( this.delta / ( 1000 / 60 ), 0.0001 ), 10 );
+          this.elapsed += this.delta;
+          this.nelapsed += this.ndelta;
+          this.last = this.now;
+          this.tick++;
+        };
+
+      })();
+
+      /*================================================
+
+      Grid Entity
+
+      ================================================*/
+
+      (function(){ 'use strict';
+
+        g.Grid = function( cols, rows ) {
+          this.cols = cols;
+          this.rows = rows;
+          this.tiles = [];
+          for( var x = 0; x < cols; x++ ) {
+            this.tiles[ x ] = [];
+            for( var y = 0; y < rows; y++ ) {
+              this.tiles[ x ].push( 'empty' );
+            }
+          }
+        };
+
+        g.Grid.prototype.get = function( x, y ) {
+          return this.tiles[ x ][ y ];
+        };
+
+        g.Grid.prototype.set = function( x, y, val ) {
+          this.tiles[ x ][ y ] = val;
+        };
+
+      })();
+
+      /*================================================
+
+      Board Tile Entity
+
+      ================================================*/
+
+      (function(){ 'use strict';
+
+        g.BoardTile = function( opt ) {
+          this.parentState = opt.parentState;
+          this.parentGroup = opt.parentGroup;
+          this.col = opt.col;
+          this.row = opt.row;
+          this.x = opt.x;
+          this.y = opt.y;
+          this.z = 0;
+          this.w = opt.w;
+          this.h = opt.h;
+          this.elem = document.createElement( 'div' );
+          this.elem.style.position = 'absolute';
+          this.elem.className = 'tile';
+          this.parentState.stageElem.appendChild( this.elem );
+          this.classes = {
+            pressed: 0,
+            path: 0,
+            up: 0,
+            down: 0,
+            left: 0,
+            right: 0
+          }
+          this.updateDimensions();
+        };
+
+        g.BoardTile.prototype.update = function() {
+          for( var k in this.classes ) {
+            if( this.classes[ k ] ) {
+              this.classes[ k ]--;
+            }
+          }
+
+          if( this.parentState.food.tile.col == this.col || this.parentState.food.tile.row == this.row ) {
+            this.classes.path = 1;
+            if( this.col < this.parentState.food.tile.col ) {
+              this.classes.right = 1;
             } else {
-                disintegrationAmount = 1.0 - ((cycleProgress - holdPhaseEnd) / (1.0 - holdPhaseEnd));
+              this.classes.right = 0;
             }
-            disintegrationAmount = Math.sin(disintegrationAmount * Math.PI * 0.5);
-            let addX = 0, addY = 0, addZ = 0;
-            const dist = Math.sqrt(homeX * homeX + homeY * homeY + homeZ * homeZ) + 1e-6;
-            for (let w = 0; w < shockwaves.length; w++) {
-                const sw = shockwaves[w];
-                const elapsed = Math.max(0, time - sw.t0);
-                const R = sw.speed * elapsed;
-                const sigma = sw.width;
-                const decayFactor = Math.exp(-sw.decay * elapsed);
-                const g = Math.exp(-((dist - R) * (dist - R)) / (2 * sigma * sigma));
-                const amp = sw.amplitude * g * decayFactor;
-                addX += (homeX / dist) * amp;
-                addY += (homeY / dist) * amp;
-                addZ += (homeZ / dist) * amp * 0.6; 
+            if( this.col > this.parentState.food.tile.col ) {
+              this.classes.left = 1;
+            } else {
+              this.classes.left = 0;
             }
-            let currentTargetX = homeX + addX;
-            let currentTargetY = homeY + addY;
-            let currentTargetZ = homeZ + addZ;
-            let currentLerpFactor = 0.085;
-            if (disintegrationAmount > 0.001) {
-                currentTargetX += disintegrationOffsets[i3]     * disintegrationAmount;
-                currentTargetY += disintegrationOffsets[i3 + 1] * disintegrationAmount;
-                currentTargetZ += disintegrationOffsets[i3 + 2] * disintegrationAmount;
-                currentLerpFactor = 0.045 + disintegrationAmount * 0.02;
+            if( this.row > this.parentState.food.tile.row ) {
+              this.classes.up = 1;
+            } else {
+              this.classes.up = 0;
             }
-            positions[i3]     += (currentTargetX - positions[i3])     * currentLerpFactor;
-            positions[i3 + 1] += (currentTargetY - positions[i3 + 1]) * currentLerpFactor;
-            positions[i3 + 2] += (currentTargetZ - positions[i3 + 2]) * currentLerpFactor;
-            const { color: baseParticleColor, size: baseParticleSize } = getAttributesForParticle(i);
-            let brightnessFactor = (0.65 + Math.sin((i / particleCount) * Math.PI * 7 + time * 1.3) * 0.35) * (1 - disintegrationAmount * 0.75);
-            brightnessFactor *= (0.85 + Math.sin(time * 7 + i * 0.5) * 0.15);
-            particleColors[i3]     = baseParticleColor.r * brightnessFactor;
-            particleColors[i3 + 1] = baseParticleColor.g * brightnessFactor;
-            particleColors[i3 + 2] = baseParticleColor.b * brightnessFactor;
-            let currentSize = baseParticleSize * (1 - disintegrationAmount * 0.9);
-            currentSize *= (0.8 + Math.sin(time * 5 + i * 0.3) * 0.2);
-            particleSizes[iSize] = Math.max(0.05, currentSize);
-        }
-        particles.geometry.attributes.position.needsUpdate = true;
-        particles.geometry.attributes.targetPosition.needsUpdate = true;
-        particles.geometry.attributes.color.needsUpdate = true;
-        particles.geometry.attributes.size.needsUpdate = true;
-        if (shockwaves.length) {
-            const keep = [];
-            for (let w = 0; w < shockwaves.length; w++) {
-                const sw = shockwaves[w];
-                const elapsed = time - sw.t0;
-                const R = sw.speed * elapsed;
-                const expiredByRadius = (R - MAX_HOME_RADIUS) > (6 * sw.width);
-                const expiredByTime = elapsed > 12;
-                if (!(expiredByRadius || expiredByTime)) keep.push(sw);
+            if( this.row < this.parentState.food.tile.row ) {
+              this.classes.down = 1;
+            } else {
+              this.classes.down = 0;
             }
-            shockwaves = keep;
+          } else {
+            this.classes.path = 0;
+          }
+
+          if( this.parentState.food.eaten ) {
+            this.classes.path = 0;
+          }
+        };
+
+        g.BoardTile.prototype.updateDimensions = function() {
+          this.x = this.col * this.parentState.tileWidth;
+          this.y = this.row * this.parentState.tileHeight;
+          this.w = this.parentState.tileWidth - this.parentState.spacing;
+          this.h = this.parentState.tileHeight - this.parentState.spacing;
+          this.elem.style.left = this.x + 'px';
+          this.elem.style.top = this.y + 'px';
+          this.elem.style.width = this.w + 'px';
+          this.elem.style.height = this.h + 'px';
+        };
+
+        g.BoardTile.prototype.render = function() {
+          var classString = '';
+          for( var k in this.classes ) {
+            if( this.classes[ k ] ) {
+              classString += k + ' ';
+            }
+          }
+          this.elem.className = 'tile ' + classString;
+        };
+
+      })();
+
+      /*================================================
+
+      Snake Tile Entity
+
+      ================================================*/
+
+      (function(){ 'use strict';
+
+        g.SnakeTile = function( opt ) {
+          this.parentState = opt.parentState;
+          this.parentGroup = opt.parentGroup;
+          this.col = opt.col;
+          this.row = opt.row;
+          this.x = opt.x;
+          this.y = opt.y;
+          this.w = opt.w;
+          this.h = opt.h;
+          this.color = null;
+          this.scale = 1;
+          this.rotation = 0;
+          this.blur = 0;
+          this.alpha = 1;
+          this.borderRadius = 0;
+          this.borderRadiusAmount = 0;
+          this.elem = document.createElement( 'div' );
+          this.elem.style.position = 'absolute';
+          this.parentState.stageElem.appendChild( this.elem );
+        };
+
+        g.SnakeTile.prototype.update = function( i ) {
+          this.x = this.col * this.parentState.tileWidth;
+          this.y = this.row * this.parentState.tileHeight;
+          if( i == 0 ) {
+            this.color = '#fff';
+            this.blur = this.parentState.dimAvg * 0.03 + Math.sin( this.parentState.time.elapsed / 200 ) * this.parentState.dimAvg * 0.015;
+            if( this.parentState.snake.dir == 'n' ) {
+              this.borderRadius = this.borderRadiusAmount + '% ' + this.borderRadiusAmount + '% 0 0';
+            } else if( this.parentState.snake.dir == 's' ) {
+              this.borderRadius = '0 0 ' + this.borderRadiusAmount + '% ' + this.borderRadiusAmount + '%';
+            } else if( this.parentState.snake.dir == 'e' ) {
+              this.borderRadius = '0 ' + this.borderRadiusAmount + '% ' + this.borderRadiusAmount + '% 0';
+            } else if( this.parentState.snake.dir == 'w' ) {
+              this.borderRadius = this.borderRadiusAmount + '% 0 0 ' + this.borderRadiusAmount + '%';
+            }
+          } else {
+            this.color = '#fff';
+            this.blur = 0;
+            this.borderRadius = '0';
+          }
+          this.alpha = 1 - ( i / this.parentState.snake.tiles.length ) * 0.6;
+          this.rotation = ( this.parentState.snake.justAteTick / this.parentState.snake.justAteTickMax ) * 90;
+          this.scale = 1 + ( this.parentState.snake.justAteTick / this.parentState.snake.justAteTickMax ) * 1;
+        };
+
+        g.SnakeTile.prototype.updateDimensions = function() {
+          this.w = this.parentState.tileWidth - this.parentState.spacing;
+          this.h = this.parentState.tileHeight - this.parentState.spacing;
+        };
+
+        g.SnakeTile.prototype.render = function( i ) {
+          this.elem.style.left = this.x + 'px';
+          this.elem.style.top = this.y + 'px';
+          this.elem.style.width = this.w + 'px';
+          this.elem.style.height = this.h + 'px';
+          this.elem.style.backgroundColor = 'rgba(255, 255, 255, ' + this.alpha + ')';
+          this.elem.style.boxShadow = '0 0 ' + this.blur + 'px #fff';
+          this.elem.style.borderRadius = this.borderRadius;
+        };
+
+      })();
+
+      /*================================================
+
+      Food Tile Entity
+
+      ================================================*/
+
+      (function(){ 'use strict';
+
+        g.FoodTile = function( opt ) {
+          this.parentState = opt.parentState;
+          this.parentGroup = opt.parentGroup;
+          this.col = opt.col;
+          this.row = opt.row;
+          this.x = opt.x;
+          this.y = opt.y;
+          this.w = opt.w;
+          this.h = opt.h;
+          this.blur = 0;
+          this.scale = 1;
+          this.hue = 100;
+          this.opacity = 0;
+          this.elem = document.createElement( 'div' );
+          this.elem.style.position = 'absolute';
+          this.parentState.stageElem.appendChild( this.elem );
+        };
+
+        g.FoodTile.prototype.update = function() {
+          this.x = this.col * this.parentState.tileWidth;
+          this.y = this.row * this.parentState.tileHeight;
+          this.blur = this.parentState.dimAvg * 0.03 + Math.sin( this.parentState.time.elapsed / 200 ) * this.parentState.dimAvg * 0.015;
+          this.scale = 0.8 + Math.sin( this.parentState.time.elapsed / 200 ) * 0.2;
+
+          if( this.parentState.food.birthTick || this.parentState.food.deathTick ) {
+            if( this.parentState.food.birthTick ) {
+              this.opacity = 1 - ( this.parentState.food.birthTick / 1 ) * 1;
+            } else {
+              this.opacity = ( this.parentState.food.deathTick / 1 ) * 1;
+            }
+          } else {
+            this.opacity = 1;
+          }
+        };
+
+        g.FoodTile.prototype.updateDimensions = function() {
+          this.w = this.parentState.tileWidth - this.parentState.spacing;
+          this.h = this.parentState.tileHeight - this.parentState.spacing;
+        };
+
+        g.FoodTile.prototype.render = function() {
+          this.elem.style.left = this.x + 'px';
+          this.elem.style.top = this.y + 'px';
+          this.elem.style.width = this.w + 'px';
+          this.elem.style.height = this.h + 'px';
+          this.elem.style[ 'transform' ] = 'translateZ(0) scale(' + this.scale + ')';
+          this.elem.style.backgroundColor = 'hsla(' + this.hue + ', 100%, 60%, 1)';
+          this.elem.style.boxShadow = '0 0 ' + this.blur + 'px hsla(' + this.hue + ', 100%, 60%, 1)';
+          this.elem.style.opacity = this.opacity;
+        };
+
+      })();
+
+      /*================================================
+
+      Snake Entity
+
+      ================================================*/
+
+      (function(){ 'use strict';
+
+        g.Snake = function( opt ) {
+          this.parentState = opt.parentState;
+          this.dir = 'e',
+          this.currDir = this.dir;
+          this.tiles = [];
+          for( var i = 0; i < 5; i++ ) {
+            this.tiles.push( new g.SnakeTile({
+              parentState: this.parentState,
+              parentGroup: this.tiles,
+              col: 8 - i,
+              row: 3,
+              x: ( 8 - i ) * opt.parentState.tileWidth,
+              y: 3 * opt.parentState.tileHeight,
+              w: opt.parentState.tileWidth - opt.parentState.spacing,
+              h: opt.parentState.tileHeight - opt.parentState.spacing
+            }));
+          }
+          this.last = 0;
+          this.updateTick = 10;
+          this.updateTickMax = this.updateTick;
+          this.updateTickLimit = 3;
+          this.updateTickChange = 0.2;
+          this.deathFlag = 0;
+          this.justAteTick = 0;
+          this.justAteTickMax = 1;
+          this.justAteTickChange = 0.05;
+
+          // sync data grid of the play state
+          var i = this.tiles.length;
+
+          while( i-- ) {
+            this.parentState.grid.set( this.tiles[ i ].col, this.tiles[ i ].row, 'snake' );
+          }
+        };
+
+        g.Snake.prototype.updateDimensions = function() {
+          var i = this.tiles.length;
+          while( i-- ) {
+            this.tiles[ i ].updateDimensions();
+          }
+        };
+
+        g.Snake.prototype.update = function() {
+          if( this.parentState.keys.up ) {
+            if( this.dir != 's' && this.dir != 'n' && this.currDir != 's' && this.currDir != 'n' ) {
+              this.dir = 'n';
+            }
+          } else if( this.parentState.keys.down) {
+            if( this.dir != 'n' && this.dir != 's' && this.currDir != 'n' && this.currDir != 's' ) {
+              this.dir = 's';
+            }
+          } else if( this.parentState.keys.right ) {
+            if( this.dir != 'w' && this.dir != 'e' && this.currDir != 'w' && this.currDir != 'e' ) {
+              this.dir = 'e';
+            }
+          } else if( this.parentState.keys.left ) {
+            if( this.dir != 'e' && this.dir != 'w' && this.currDir != 'e' && this.currDir != 'w' ) {
+              this.dir = 'w';
+            }
+          }
+
+          this.parentState.keys.up = 0;
+          this.parentState.keys.down = 0;
+          this.parentState.keys.right = 0;
+          this.parentState.keys.left = 0;
+
+          this.updateTick += this.parentState.time.ndelta;
+          if( this.updateTick >= this.updateTickMax ) {
+            // reset the update timer to 0, or whatever leftover there is
+            this.updateTick = ( this.updateTick - this.updateTickMax );
+
+            // rotate snake block array
+            this.tiles.unshift( new g.SnakeTile({
+              parentState: this.parentState,
+              parentGroup: this.tiles,
+              col: this.tiles[ 0 ].col,
+              row: this.tiles[ 0 ].row,
+              x: this.tiles[ 0 ].col * this.parentState.tileWidth,
+              y: this.tiles[ 0 ].row * this.parentState.tileHeight,
+              w: this.parentState.tileWidth - this.parentState.spacing,
+              h: this.parentState.tileHeight - this.parentState.spacing
+            }));
+            this.last = this.tiles.pop();
+            this.parentState.stageElem.removeChild( this.last.elem );
+
+            this.parentState.boardTiles.collection[ this.last.col + ( this.last.row * this.parentState.cols ) ].classes.pressed = 2;
+
+            // sync data grid of the play state
+            var i = this.tiles.length;
+
+            while( i-- ) {
+              this.parentState.grid.set( this.tiles[ i ].col, this.tiles[ i ].row, 'snake' );
+            }
+            this.parentState.grid.set( this.last.col, this.last.row, 'empty' );
+
+
+            // move the snake's head
+            if ( this.dir == 'n' ) {
+              this.currDir = 'n';
+              this.tiles[ 0 ].row -= 1;
+            } else if( this.dir == 's' ) {
+              this.currDir = 's';
+              this.tiles[ 0 ].row += 1;
+            } else if( this.dir == 'w' ) {
+              this.currDir = 'w';
+              this.tiles[ 0 ].col -= 1;
+            } else if( this.dir == 'e' ) {
+              this.currDir = 'e';
+              this.tiles[ 0 ].col += 1;
+            }
+
+            // wrap walls
+            this.wallFlag = false;
+            if( this.tiles[ 0 ].col >= this.parentState.cols ) {
+              this.tiles[ 0 ].col = 0;
+              this.wallFlag = true;
+            }
+            if( this.tiles[ 0 ].col < 0 ) {
+              this.tiles[ 0 ].col = this.parentState.cols - 1;
+              this.wallFlag = true;
+            }
+            if( this.tiles[ 0 ].row >= this.parentState.rows ) {
+              this.tiles[ 0 ].row = 0;
+              this.wallFlag = true;
+            }
+            if( this.tiles[ 0 ].row < 0 ) {
+              this.tiles[ 0 ].row = this.parentState.rows - 1;
+              this.wallFlag = true;
+            }
+
+            // check death by eating self
+            if( this.parentState.grid.get( this.tiles[ 0 ].col, this.tiles[ 0 ].row ) == 'snake' ) {
+              this.deathFlag = 1;
+              clearTimeout( this.foodCreateTimeout );
+            }
+
+            // check eating of food
+            if( this.parentState.grid.get( this.tiles[ 0 ].col, this.tiles[ 0 ].row ) == 'food' ) {
+              this.tiles.push( new g.SnakeTile({
+                parentState: this.parentState,
+                parentGroup: this.tiles,
+                col: this.last.col,
+                row: this.last.row,
+                x: this.last.col * this.parentState.tileWidth,
+                y: this.last.row * this.parentState.tileHeight,
+                w: this.parentState.tileWidth - this.parentState.spacing,
+                h: this.parentState.tileHeight - this.parentState.spacing
+              }));
+              if( this.updateTickMax - this.updateTickChange > this.updateTickLimit ) {
+                this.updateTickMax -= this.updateTickChange;
+              }
+              this.parentState.score++;
+              this.parentState.scoreElem.innerHTML = this.parentState.score;
+              this.justAteTick = this.justAteTickMax;
+
+              this.parentState.food.eaten = 1;
+              this.parentState.stageElem.removeChild( this.parentState.food.tile.elem );
+
+              var _this = this;
+              
+              this.foodCreateTimeout = setTimeout( function() {
+                _this.parentState.food = new g.Food({
+                  parentState: _this.parentState
+                });
+              }, 300);
+            }
+
+            // check death by eating self
+            if( this.deathFlag ) {
+              g.setState( 'play' );
+            }
+          }
+
+          // update individual snake tiles
+          var i = this.tiles.length;
+          while( i-- ) {
+            this.tiles[ i ].update( i );
+          }
+
+          if( this.justAteTick > 0 ) {
+            this.justAteTick -= this.justAteTickChange;
+          } else if( this.justAteTick < 0 ) {
+            this.justAteTick = 0;
+          }
+        };
+
+        g.Snake.prototype.render = function() {
+          // render individual snake tiles
+          var i = this.tiles.length;
+          while( i-- ) {
+            this.tiles[ i ].render( i );
+          }
+        };
+
+      })();
+
+      /*================================================
+
+      Food Entity
+
+      ================================================*/
+
+      (function(){ 'use strict';
+
+        g.Food = function( opt ) {
+          this.parentState = opt.parentState;
+          this.tile = new g.FoodTile({
+            parentState: this.parentState,
+            col: 0,
+            row: 0,
+            x: 0,
+            y: 0,
+            w: opt.parentState.tileWidth - opt.parentState.spacing,
+            h: opt.parentState.tileHeight - opt.parentState.spacing
+          });
+          this.reset();
+          this.eaten = 0;
+          this.birthTick = 1;
+          this.deathTick = 0;
+          this.birthTickChange = 0.025;
+          this.deathTickChange = 0.05;
+        };
+
+        g.Food.prototype.reset = function() {
+          var empty = [];
+          for( var x = 0; x < this.parentState.cols; x++) {
+            for( var y = 0; y < this.parentState.rows; y++) {
+              var tile = this.parentState.grid.get( x, y );
+              if( tile == 'empty' ) {
+                empty.push( { x: x, y: y } );
+              }
+            }
+          }
+          var newTile = empty[ g.util.randInt( 0, empty.length - 1 ) ];
+          this.tile.col = newTile.x;
+          this.tile.row = newTile.y;
+        };
+
+        g.Food.prototype.updateDimensions = function() {
+          this.tile.updateDimensions();
+        };
+
+        g.Food.prototype.update = function() {
+          // update food tile
+          this.tile.update();
+
+          if( this.birthTick > 0 ) {
+            this.birthTick -= this.birthTickChange;
+          } else if( this.birthTick < 0 ) {
+            this.birthTick = 0;
+          }
+
+          // sync data grid of the play state
+          this.parentState.grid.set( this.tile.col, this.tile.row, 'food' );
+        };
+
+        g.Food.prototype.render = function() {
+          this.tile.render();
+        };
+
+      })();
+
+      /*================================================
+
+      Play State
+
+      ================================================*/
+
+      (function(){ 'use strict';
+
+        function StatePlay() {
+          this.name = 'play';
         }
-    }
-    function onWindowResize() {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        composer.setSize(window.innerWidth, window.innerHeight);
-    }
-    function setTheme(themeName) {
-        if (!themes[themeName]) return;
-        currentTheme = themeName;
-        document.body.className = `theme-${currentTheme}`;
-        document.querySelectorAll('.theme-btn[data-theme]').forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.theme === themeName);
-        });
-        const theme = themes[currentTheme];
-        const bloomPass = scene.userData.bloomPass;
-        if (bloomPass) {
-            bloomPass.strength = theme.bloom.strength;
-            bloomPass.radius = theme.bloom.radius;
-            bloomPass.threshold = theme.bloom.threshold;
-        }
-        updateParticleColorsAndSizes();
-    }
-    function updateParticleColorsAndSizes() {
-        if (!particles) return;
-        const pColors = particles.geometry.attributes.color.array;
-        const pSizes = particles.geometry.attributes.size.array;
-        for (let i = 0; i < particleCount; i++) {
-            const { color, size } = getAttributesForParticle(i);
-            pColors[i * 3]     = color.r;
-            pColors[i * 3 + 1] = color.g;
-            pColors[i * 3 + 2] = color.b;
-            pSizes[i]          = size;
-        }
-        particles.geometry.attributes.color.needsUpdate = true;
-        particles.geometry.attributes.size.needsUpdate = true;
-    }
-    function animate() {
-        requestAnimationFrame(animate);
-        time += 0.02;
-        controls.update();
-        if (isAnimationEnabled) animateParticles();
-        composer.render();
-    }
-</script>
+
+        StatePlay.prototype.init = function() {
+          this.scoreElem = document.querySelector( '.score' );
+          this.stageElem = document.querySelector( '.stage' );
+          this.dimLong = 28;
+          this.dimShort = 16;
+          this.padding = 0.25;
+          this.boardTiles = new g.Group();
+          this.keys = {};
+          this.foodCreateTimeout = null;
+          this.score = 0;
+          this.scoreElem.innerHTML = this.score;
+          this.time = new g.Time();
+          this.getDimensions();
+          if( this.winWidth < this.winHeight ) {
+            this.rows = this.dimLong;
+            this.cols = this.dimShort;
+          } else {
+            this.rows = this.dimShort;
+            this.cols = this.dimLong;
+          }
+          this.spacing = 1;
+          this.grid = new g.Grid( this.cols, this.rows );
+          this.resize();
+          this.createBoardTiles();
+          this.bindEvents();
+          this.snake = new g.Snake({
+            parentState: this
+          });
+          this.food = new g.Food({
+            parentState: this
+          });
+        };
+
+        StatePlay.prototype.getDimensions = function() {
+          this.winWidth = window.innerWidth;
+          this.winHeight = window.innerHeight;
+          this.activeWidth = this.winWidth - ( this.winWidth * this.padding );
+          this.activeHeight = this.winHeight - ( this.winHeight * this.padding );
+        };
+
+        StatePlay.prototype.resize = function() {
+          var _this = g.currentState();
+
+          _this.getDimensions();
+
+          _this.stageRatio = _this.rows / _this.cols;
+
+          if( _this.activeWidth > _this.activeHeight / _this.stageRatio ) {
+            _this.stageHeight = _this.activeHeight;
+            _this.stageElem.style.height = _this.stageHeight + 'px';
+            _this.stageWidth = Math.floor( _this.stageHeight /_this.stageRatio );
+            _this.stageElem.style.width = _this.stageWidth + 'px';
+          } else {
+            _this.stageWidth = _this.activeWidth;
+            _this.stageElem.style.width = _this.stageWidth + 'px';
+            _this.stageHeight = Math.floor( _this.stageWidth * _this.stageRatio );
+            _this.stageElem.style.height = _this.stageHeight + 'px';
+          }
+
+          _this.tileWidth = ~~( _this.stageWidth / _this.cols );
+          _this.tileHeight = ~~( _this.stageHeight / _this.rows );
+          _this.dimAvg = ( _this.activeWidth + _this.activeHeight ) / 2;
+          _this.spacing = Math.max( 1, ~~( _this.dimAvg * 0.0025 ) );
+
+          _this.stageElem.style.marginTop = ( -_this.stageElem.offsetHeight / 2 ) + _this.headerHeight / 2 + 'px';
+
+          _this.boardTiles.each( 'updateDimensions' );
+          _this.snake !== undefined && _this.snake.updateDimensions();
+          _this.food !== undefined && _this.food.updateDimensions();
+        };
+
+        StatePlay.prototype.createBoardTiles = function() {
+          for( var y = 0; y < this.rows; y++ ) {
+            for( var x = 0; x < this.cols; x++ ) {
+              this.boardTiles.add( new g.BoardTile({
+                parentState: this,
+                parentGroup: this.boardTiles,
+                col: x,
+                row: y,
+                x: x * this.tileWidth,
+                y: y * this.tileHeight,
+                w: this.tileWidth - this.spacing,
+                h: this.tileHeight - this.spacing
+              }));
+            }
+          }
+        };
+
+        StatePlay.prototype.upOn = function() { g.currentState().keys.up = 1; }
+        StatePlay.prototype.downOn = function() { g.currentState().keys.down = 1; }
+        StatePlay.prototype.rightOn = function() { g.currentState().keys.right = 1; }
+        StatePlay.prototype.leftOn = function() { g.currentState().keys.left = 1; }
+        StatePlay.prototype.upOff = function() { g.currentState().keys.up = 0; }
+        StatePlay.prototype.downOff = function() { g.currentState().keys.down = 0; }
+        StatePlay.prototype.rightOff = function() { g.currentState().keys.right = 0; }
+        StatePlay.prototype.leftOff = function() { g.currentState().keys.left = 0; }
+
+        StatePlay.prototype.keydown = function( e ) {
+          e.preventDefault();
+          var e = ( e.keyCode ? e.keyCode : e.which ),
+            _this = g.currentState();
+          if( e === 38 || e === 87 ) { _this.upOn(); }
+          if( e === 39 || e === 68 ) { _this.rightOn(); }
+          if( e === 40 || e === 83 ) { _this.downOn(); }
+          if( e === 37 || e === 65 ) { _this.leftOn(); }
+        };
+
+        StatePlay.prototype.bindEvents = function() {
+          var _this = g.currentState();
+          window.addEventListener( 'keydown', _this.keydown, false );
+          window.addEventListener( 'resize', _this.resize, false );
+        };
+
+        StatePlay.prototype.step = function() {
+          this.boardTiles.each( 'update' );
+          this.boardTiles.each( 'render' );
+          this.snake.update();
+          this.snake.render();
+          this.food.update();
+          this.food.render();
+          this.time.update();
+        };
+
+        StatePlay.prototype.exit = function() {
+          window.removeEventListener( 'keydown', this.keydown, false );
+          window.removeEventListener( 'resize', this.resize, false );
+          this.stageElem.innerHTML = '';
+          this.grid.tiles = null;
+          this.time = null;
+        };
+
+        g.addState( new StatePlay() );
+
+      })();
+
+      /*================================================
+
+      Game
+
+      ================================================*/
+
+      (function(){ 'use strict';
+
+        g.config = {
+          title: 'Snakely',
+          debug: window.location.hash == '#debug' ? 1 : 0,
+          state: 'play'
+        };
+
+        g.setState( g.config.state );
+
+        g.time = new g.Time();
+
+        g.step = function() {
+          requestAnimationFrame( g.step );
+          g.states[ g.state ].step();
+          g.time.update();
+        };
+
+        window.addEventListener( 'load', g.step, false );
+
+      })();
+    </script>
+  </body>
+</html>
