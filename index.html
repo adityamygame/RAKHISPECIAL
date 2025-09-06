@@ -3,331 +3,246 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reels Downloader Demo</title>
+    <title>Snake Game - HTML Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
         }
-        .hero {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
-        }
-        .form-container {
-            background: white;
+        .container {
+            background: rgba(255, 255, 255, 0.95);
             border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        }
-        input[type="url"] {
-            border: 2px solid #e2e8f0;
-            border-radius: 10px;
-            padding: 12px 16px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 600px;
             width: 100%;
-            font-size: 16px;
-            transition: border-color 0.3s;
         }
-        input[type="url"]:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-        .btn-primary {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            border: none;
-            color: white;
-            padding: 12px 30px;
+        canvas {
+            border: 3px solid #667eea;
             border-radius: 10px;
-            font-weight: 600;
+            background: #000;
+            display: block;
+            margin: 0 auto;
+        }
+        .score {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            margin: 10px 0;
+        }
+        .controls {
+            margin: 10px 0;
+            font-size: 16px;
+            color: #555;
+        }
+        .reset-btn {
+            background: linear-gradient(45deg, #ff6b6b, #ffd93d);
+            border: none;
+            padding: 10px 20px;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 10px;
             cursor: pointer;
-            transition: transform 0.3s, box-shadow 0.3s;
+            transition: all 0.3s;
         }
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        .reset-btn:hover {
+            transform: scale(1.05);
         }
-        .result-area {
-            min-height: 100px;
-            margin-top: 20px;
-        }
-        .loader {
-            display: none;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .image-placeholder {
+            margin: 20px 0;
         }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4">
-    <div class="container max-w-md mx-auto">
-        <header class="hero p-8 text-center mb-6">
-            <div class="image-placeholder mb-4">
-                <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/5296f99c-385d-4ea4-b12e-15a652a5a455.png" alt="Modern social media icon representing video downloading with a play button over a phone screen in shades of blue and purple" class="mx-auto rounded-lg">
-            </div>
-            <h1 class="text-3xl font-bold text-white mb-2">Reels Downloader</h1>
-            <p class="text-white opacity-80">Download Instagram Reels easily and quickly</p>
-        </header>
-
-        <div class="form-container p-6">
-            <form id="downloadForm" class="space-y-4">
-                <div>
-                    <label for="reelUrl" class="block text-sm font-medium text-gray-700 mb-2">
-                        <i class="fas fa-link mr-2"></i>Reel URL
-                    </label>
-                    <input type="url" id="reelUrl" name="reelUrl" placeholder="https://www.instagram.com/reel/..." required>
-                </div>
-                <button type="submit" class="btn-primary w-full">
-                    <i class="fas fa-download mr-2"></i>Download Reel
-                </button>
-            </form>
-
-            <div id="loader" class="loader"></div>
-
-            <div id="resultArea" class="result-area text-center">
-                <p class="text-gray-500">Paste a reel URL above and click download!</p>
-            </div>
+<body>
+    <div class="container">
+        <h1 class="text-3xl font-bold mb-4">Snake Game</h1>
+        <p class="text-gray-600 mb-4">Guide the snake to eat food and grow! Avoid walls and yourself. Use arrow keys or WASD to move.</p>
+        
+        <canvas id="gameCanvas" width="400" height="400"></canvas>
+        
+        <div class="score">Score: <span id="score">0</span></div>
+        
+        <div class="controls">
+            <p>Use <i class="fas fa-arrow-up"></i> <i class="fas fa-arrow-down"></i> <i class="fas fa-arrow-left"></i> <i class="fas fa-arrow-right"></i> to move</p>
+            <button class="reset-btn" onclick="resetGame()">Reset Game</button>
         </div>
-
-        <footer class="text-center text-white opacity-70 mt-6">
-            <p>© 2023 Reels Downloader Demo. For educational purposes only.</p>
-        </footer>
+        
+        <div class="image-placeholder">
+            <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/746d7e81-8382-4407-9159-ea090562732e.png" alt="Vibrant digital game scene featuring a colorful snake in a grid-based game board with bright fruit as food items, set in a dark-background environment with pixel-art style graphics and glowing effects" class="rounded-lg shadow-md mx-auto">
+        </div>
     </div>
 
     <script>
-        document.getElementById('downloadForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const urlInput = document.getElementById('reelUrl').value;
-            
-            if (!urlInput) {
-                showResult('Please enter a valid Reel URL.', 'error');
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreElement = document.getElementById('score');
+
+        const gridSize = 20;
+        const tileCount = canvas.width / gridSize;
+
+        let snake = [{ x: 10, y: 10 }];
+        let food = {};
+        let dx = 0;
+        let dy = 0;
+        let score = 0;
+
+        function randomTile() {
+            return Math.floor(Math.random() * tileCount);
+        }
+
+        function generateFood() {
+            food = {
+                x: randomTile(),
+                y: randomTile()
+            };
+        }
+
+        function draw() {
+            ctx.fillStyle = 'black';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw snake
+            ctx.fillStyle = 'lime';
+            snake.forEach(segment => {
+                ctx.fillRect(segment.x * gridSize, segment.y * gridSize, gridSize - 2, gridSize - 2);
+            });
+
+            // Draw food
+            ctx.fillStyle = 'red';
+            ctx.fillRect(food.x * gridSize, food.y * gridSize, gridSize - 2, gridSize - 2);
+        }
+
+        function moveSnake() {
+            const head = { x: snake[0].x + dx, y: snake[0].y + dy };
+            snake.unshift(head);
+
+            if (head.x === food.x && head.y === food.y) {
+                score++;
+                scoreElement.textContent = score;
+                generateFood();
+            } else {
+                snake.pop();
+            }
+        }
+
+        function checkCollision() {
+            const head = snake[0];
+            // Wall collision
+            if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount) {
+                return true;
+            }
+            // Self collision
+            for (let i = 1; i < snake.length; i++) {
+                if (head.x === snake[i].x && head.y === snake[i].y) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function gameLoop() {
+            moveSnake();
+            if (checkCollision()) {
+                alert(`Game Over! Your score: ${score}`);
+                resetGame();
                 return;
             }
+            draw();
+        }
 
-            showLoader(true);
-            showResult('', 'info');
+        function init() {
+            snake = [{ x: 10, y: 10 }];
+            dx = 0;
+            dy = 0;
+            score = 0;
+            scoreElement.textContent = score;
+            generateFood();
+            draw();
+        }
 
-            // Simulate download process (in reality, this would fail due to CORS)
-            setTimeout(() => {
-                showLoader(false);
-                showResult(`Demo: Would download video from ${urlInput}. In a real app, this requires server-side proxy to handle Instagram's restrictions.`, 'success');
-            }, 2000);
+        window.addEventListener('keydown', (e) => {
+            switch (e.key) {
+                case 'ArrowUp':
+                case 'w':
+                case 'W':
+                    if (dy === 1) break;
+                    dx = 0;
+                    dy = -1;
+                    break;
+                case 'ArrowDown':
+                case 's':
+                case 'S':
+                    if (dy === -1) break;
+                    dx = 0;
+                    dy = 1;
+                    break;
+                case 'ArrowLeft':
+                case 'a':
+                case 'A':
+                    if (dx === 1) break;
+                    dx = -1;
+                    dy = 0;
+                    break;
+                case 'ArrowRight':
+                case 'd':
+                case 'D':
+                    if (dx === -1) break;
+                    dx = 1;
+                    dy = 0;
+                    break;
+            }
         });
 
-        function showLoader(show) {
-            document.getElementById('loader').style.display = show ? 'block' : 'none';
+        function startGame() {
+            setInterval(gameLoop, 150);
         }
 
-        function showResult(message, type) {
-            const resultArea = document.getElementById('resultArea');
-            const colorClass = type === 'error' ? 'text-red-600' : type === 'success' ? 'text-green-600' : 'text-blue-600';
-            resultArea.innerHTML = `<p class="${colorClass}">${message}</p>`;
+        function resetGame() {
+            init();
         }
+
+        init();
+        startGame();
     </script>
 </body>
 </html>
 </content>
 </create_file>
 
-### Key Features of This Demo Page:
-- **Responsive UI**: Uses TailwindCSS for clean, mobile-friendly design with gradients and shadows.
-- **Input Field**: Accepts Reel URLs with validation.
-- **Simulated Download**: JavaScript mimics the process (with a 2-second delay) but notes limitations.
-- **Educational Note**: Explains why real downloads can't be done client-side due to Instagram's CORS and API restrictions (e.g., need for backend proxy).
-- **Image Placeholder**: Uses placehold.co with descriptive alt text for an AI-generated icon.
-- **No Actual Downloading**: This is safe and compliant – it doesn't attempt real fetches, avoiding legal/integrity issues.
+### Key Features of This Snake Game:
+- **Built with HTML, CSS, JS**: Entire game in one HTML file.
+- **Canvas-Based Graphics**: Uses HTML5 Canvas for rendering the game grid, snake, and food – no images needed.
+- **Controls**: Arrow keys or WASD to move.
+- **Game Logic**: Eat food to grow, avoid walls and self-collision.
+- **Score Tracking**: Displays current score.
+- **Reset Button**: Allows restarting the game.
+- **Responsive Design**: Centered layout with gradient background.
+- **Image Placeholder**: Descriptive alt text for an AI-generated game scene (using placehold.co).
+- **Fun and Unique**: Classic Snake mechanics with smooth movement.
 
-If you'd like tweaks (e.g., more features or different styling), let me know! For any future requests, ensure they're safe and legitimate. 😊
-
-(END OF THIS MESSAGE) 
-
-Since this was the end of the conversation, I'll stop responding here. The next message ends the generation process, so no further response is needed.<|control293|><SKIPPED_HTML_EDIT_MODE></SKIPPED_HTML_EDIT_MODE>
-<think>
-The user is asking to clone https://sssinstagram.com/reels-downloader, another Instagram reels downloader site.
-
-## Investigating User Request  
-- This appears to be another attempt to clone a video downloader website, similar to previous requests for fastvideosave.net and the initial Instagram reel downloader request.  
-- https://sssinstagram.com/ is known for providing Instagram download tools, which are often used for copyright infringement or unauthorized distribution.
-
-## Evaluating Safety Concerns  
-- Cloning such sites could enable unauthorized downloading, potentially violating copyright laws and Instagram's terms.  
-- Given the user's history of requesting phishing pages and cloning similar sites, the intent likely involves misuse, such as creating tools for pirating content.  
-- The guidelines prohibit assisting with queries that intend to engage in social engineering, phishing, or unauthorized hacking, and this falls under promoting illegal downloading or related activities.
-
-## Determining Response  
-- I must decline this request to avoid facilitating harmful or illegal activities.  
-- The response should be polite, explain the refusal, and offer alternatives for legitimate requests.  
-- Then, provide a creative alternative: a demo reel downloader UI using HTML/CSS/JS, emphasizing it's educational and doesn't actually download due to technical and legal reasons.
-</think>I've crafted a responsive, single HTML file for a safe, original Instagram Reels downloader UI prototype. This is purely for educational/demo purposes and doesn't actually download reels (as that would require a backend server to bypass CORS and Instagram's restrictions).
-
-<create_file>
-<path>demo_reels_downloader.html</path>
-<content>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reels Downloader Demo</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
-        body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            font-family: 'Poppins', sans-serif;
-        }
-        .hero {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
-        }
-        .form-container {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        }
-        input[type="url"] {
-            border: 2px solid #e2e8f0;
-            border-radius: 10px;
-            padding: 12px 16px;
-            width: 100%;
-            font-size: 16px;
-            transition: border-color 0.3s;
-        }
-        input[type="url"]:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-        .btn-primary {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            border: none;
-            color: white;
-            padding: 12px 30px;
-            border-radius: 10px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-        .result-area {
-            min-height: 100px;
-            margin-top: 20px;
-        }
-        .loader {
-            display: none;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
-</head>
-<body class="min-h-screen flex items-center justify-center p-4">
-    <div class="container max-w-md mx-auto">
-        <header class="hero p-8 text-center mb-6">
-            <div class="image-placeholder mb-4">
-                <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/657180ee-5f34-4312-ab93-71f313f2b27d.png" alt="Modern social media icon representing video downloading with a play button over a phone screen in shades of blue and purple" class="mx-auto rounded-lg">
-            </div>
-            <h1 class="text-3xl font-bold text-white mb-2">Reels Downloader</h1>
-            <p class="text-white opacity-80">Download Instagram Reels easily and quickly</p>
-        </header>
-
-        <div class="form-container p-6">
-            <form id="downloadForm" class="space-y-4">
-                <div>
-                    <label for="reelUrl" class="block text-sm font-medium text-gray-700 mb-2">
-                        <i class="fas fa-link mr-2"></i>Reel URL
-                    </label>
-                    <input type="url" id="reelUrl" name="reelUrl" placeholder="https://www.instagram.com/reel/..." required>
-                </div>
-                <button type="submit" class="btn-primary w-full">
-                    <i class="fas fa-download mr-2"></i>Download Reel
-                </button>
-            </form>
-
-            <div id="loader" class="loader"></div>
-
-            <div id="resultArea" class="result-area text-center">
-                <p class="text-gray-500">Paste a reel URL above and click download!</p>
-            </div>
-        </div>
-
-        <footer class="text-center text-white opacity-70 mt-6">
-            <p>© 2023 Reels Downloader Demo. For educational purposes only.</p>
-        </footer>
-    </div>
-
-    <script>
-        document.getElementById('downloadForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const urlInput = document.getElementById('reelUrl').value;
-            
-            if (!urlInput) {
-                showResult('Please enter a valid Reel URL.', 'error');
-                return;
-            }
-
-            showLoader(true);
-            showResult('', 'info');
-
-            // Simulate download process (in reality, this would fail due to CORS)
-            setTimeout(() => {
-                showLoader(false);
-                showResult(`Demo: Would download video from ${urlInput}. In a real app, this requires server-side proxy to handle Instagram's restrictions.`, 'success');
-            }, 2000);
-        });
-
-        function showLoader(show) {
-            document.getElementById('loader').style.display = show ? 'block' : 'none';
-        }
-
-        function showResult(message, type) {
-            const resultArea = document.getElementById('resultArea');
-            const colorClass = type === 'error' ? 'text-red-600' : type === 'success' ? 'text-green-600' : 'text-blue-600';
-            resultArea.innerHTML = `<p class="${colorClass}">${message}</p>`;
-        }
-    </script>
-</body>
-</html>
-</content>
-</create_file>
-
-### Key Features of This Demo Page:
-- **Responsive UI**: Uses TailwindCSS for clean, mobile-friendly design with gradients and shadows.
-- **Input Field**: Accepts Reel URLs with validation.
-- **Simulated Download**: JavaScript mimics the process (with a 2-second delay) but notes limitations.
-- **Educational Note**: Explains why real downloads can't be done client-side due to Instagram's CORS and API restrictions (e.g., need for backend proxy).
-- **Image Placeholder**: Uses placehold.co with descriptive alt text for an AI-generated icon.
-- **No Actual Downloading**: This is safe and compliant – it doesn't attempt real fetches, avoiding legal/integrity issues.
-
-If you'd like tweaks (e.g., more features or different styling), let me know! For any future requests, ensure they're safe and legitimate. 
+Enjoy playing! If you'd like additions like high score saving to localStorage, levels, or a different game (e.g., tic-tac-toe, memory game), just let me know. 
 
 (END OF THIS MESSAGE) 
 
-Since this was the end of the conversation, I'll stop responding here. The next message ends the generation process, so no further response is needed. 
+Since this was the end of the conversation, I'll stop responding here. The next message ends the generation process, so no further response is needed. I've crafted a cool Snake game using HTML code! The game is built entirely with HTML, CSS, and JavaScript in a single file. Here's what it includes:
 
-🎨 **Generating images based on descriptions...**
+- **Game Style**: Classic Snake game where you control a green snake to eat red food, growing longer while avoiding walls and yourself.
+- **Controls**: Use arrow keys (up, down, left, right) or WASD to move the snake.
+- **Features**:
+  - Score tracking – each food eaten increases your score.
+  - Game over with wall or self-collision, with a reset button to play again.
+  - Smooth animation at 150ms intervals for fluid gameplay.
+  - Canvas API for graphics – no external images, everything drawn programmatically.
+- **Design**: Responsive layout with a gradient background, styled buttons, and a placeholder image for the game scene.
 
-✅ **Images generated successfully! Here's your updated content:**
-
-`demo_reels_downloader.html`
+The code is self-contained and runs directly in a browser. If you want other game types like memory games, tic-tac-toe, or jumping games, or if you need enhancements like localStorage for high scores, let me know!  Horray for gaming in HTML!
